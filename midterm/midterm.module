@@ -1,0 +1,113 @@
+<?php
+
+//hook_menu: menu item callback to execute testimonial form
+function midterm_menu() {
+    $items = array();
+    $items['midterm'] = array(
+        'title' => 'midterm product testimonial',
+        'access callback' => True,
+        'page callback' => 'midterm_product_testimonial',
+        'type' => MENU_CALLBACK
+    );
+    return $items;
+}
+
+//hook_node_view: form submit button to execute menu callback
+//skeleton for midterm_node_view() found at https://drupal.stackexchange.com/questions/186992/how-to-add-a-button-or-link-to-perform-an-action-on-a-node-with-node-view
+function midterm_node_view($node, $view_mode, $langcode) {
+    //var_dump($node);
+    if ($node->type == 'product') {
+        $form = drupal_get_form('midterm_button');
+        $node->content['testimonial_button'] = $form;
+    }
+}
+
+function midterm_button() {
+    $form = array();
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Write a testimonial')
+    );
+    return $form;
+}
+
+function midterm_button_submit($form, $form_values) {
+    $path = 'midterm';
+    drupal_goto($path);
+}
+
+function midterm_product_testimonial() {
+    return drupal_get_form('midterm_testform');
+}
+
+function midterm_testform() {
+    //to find names of all products
+    //
+    //find nids for all product nodes
+    module_load_include('inc','entity');
+    $groups_query = new EntityFieldQuery();
+    $products = $groups_query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'product')
+        ->propertyCondition('status', 1)
+        ->execute();
+
+    $nids = array();
+    foreach ($products['node'] as $value) {
+        $nids[] = $value->nid;
+    }
+
+    //load product nodes from nids
+    $product_nodes = node_load_multiple($nids);
+
+    //build radio options from loaded list nodes, linking list nid with list name
+    $select_options = array();
+    foreach ($product_nodes as $value) {
+        $product_nid = $value->nid;
+        $product_title = $value->title;
+        $select_options[$product_nid] = $product_title;
+    }
+
+    $form = array();
+    $form['name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Your name')
+    );
+    $form['product'] = array(
+        '#type' => 'select',
+        '#title' => t('Product'),
+        '#options' => $select_options
+    );
+    $form['subject_line'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Subject line')
+    );
+    $form['testimonial'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Testimonial')
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'submit'
+    );
+    return $form;
+}
+
+function midterm_testform_submit($form, $form_values){
+    $name = $form_values['values']['name'];
+    $subject = $form_values['values']['subject_line'];
+    $testimonial = $form_values['values']['testimonial'];
+    $target_nid = $form_values['values']['product'];
+
+    $node = new stdClass();
+    $node->title = $subject;
+    $node->type = 'customer_testimonial';
+    $node->status = 1;
+    $node->uid = 2;
+    $node->field_customer_name['und'][0]['value'] = $name;
+    $node->field_testimonial_content['und'][0]['value'] = $testimonial;
+    $node->field_testimonial_product['und'][0]['target_id'] = $target_nid;
+
+    node_save($node);
+    drupal_goto("node/".$node->nid);
+}

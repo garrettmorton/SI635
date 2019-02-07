@@ -1,0 +1,5 @@
+name=midterm
+core=7.x
+package=635
+description="Enables a form to create a testimonial"
+dependencies[]= views:views, entity:entity

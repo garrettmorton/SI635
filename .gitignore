@@ -1,0 +1,8 @@
+#gitignore file for SI635 repository
+#ignoring PHP files for testing modules
+
+634FinalProject/
+hwives/
+midterm/
+week2/
+week4more/
