@@ -1,0 +1,5 @@
+name=week5form
+core=7.x
+package=635
+description="Week 5 forms homework"
+dependencies[]= og:og, entity:entity

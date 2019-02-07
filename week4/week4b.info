@@ -1,0 +1,4 @@
+name=week4b
+core=7.x
+package=635 //this is where in the UI it shows up; not technically necessary
+description="Hello Week4b"

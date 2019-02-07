@@ -1,0 +1,140 @@
+<?php
+
+function week5form_menu() {
+    $items = array();
+    $items['week5form/readinglist'] = array(
+        'title' => 'week5 reading list',
+        'access callback' => TRUE,
+        'page callback' => 'week5form_list',
+        'type' => MENU_NORMAL_ITEM
+    );
+
+    $items['week5form/book'] = array(
+        'title' => 'week5 book',
+        'access callback' => TRUE,
+        'page callback' => 'week5form_book',
+        'type' => MENU_NORMAL_ITEM
+    );
+
+    return $items;
+}
+
+function week5form_list() {
+    return drupal_get_form('week5form_listform');
+}
+
+function week5form_listform(){
+    $form = array();
+    $form['title'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Class Name')
+    );
+    $form['body'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Class Description')
+    );
+    $form['newbook'] = array(
+        '#type' => 'radios',
+        '#title' => t('Would you like to add a book to this class?'),
+        '#options' => array(
+            'yes' => 'Yes',
+            'no' => 'No'
+        )
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'submit'
+    );
+    return $form;
+}
+
+function week5form_listform_submit($form, $form_values){
+    $title = $form_values['values']['title'];
+    $desc = $form_values['values']['body'];
+    $newbook = $form_values['values']['newbook'];
+
+    $node = new stdClass();
+    $node->title = $title;
+    $node->type = 'reading_list';
+    $node->status = 1;
+    $node->uid = 1;
+    $node->body['und'][0]['value'] = $desc;
+
+    node_save($node);
+    if ($newbook == 'yes') {
+        drupal_goto('week5form/book');
+    }
+    elseif ($newbook == 'no') {
+        drupal_goto("node/" . $node->nid);
+    }
+}
+
+function week5form_book() {
+    return drupal_get_form('week5form_bookform');
+}
+
+function week5form_bookform() {
+    //to find names all Reading Lists
+    //
+    //find nids for all reading list nodes
+    module_load_include('inc','entity');
+    $groups_query = new EntityFieldQuery();
+    $reading_lists = $groups_query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'reading_list')
+        ->propertyCondition('status', 1)
+        ->execute();
+
+    $nids = array();
+    foreach ($reading_lists['node'] as $value) {
+        $nids[] = $value->nid;
+    }
+
+    //load reading list nodes from nids
+    $list_nodes = node_load_multiple($nids);
+
+    //build radio options from loaded list nodes, linking list nid with list name
+    $select_options = array();
+    foreach ($list_nodes as $value) {
+        $list_nid = $value->nid;
+        $list_title = $value->title;
+        $select_options[$list_nid] = $list_title;
+    }
+
+    $form = array();
+    $form['title'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Book Title')
+    );
+    $form['author'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Book Author')
+    );
+    $form['group'] = array(
+        '#type' => 'select',
+        '#title' => t('Reading List'),
+        '#options' => $select_options
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'submit'
+    );
+    return $form;
+}
+
+function week5form_bookform_submit($form, $form_values){
+    $title = $form_values['values']['title'];
+    $author = $form_values['values']['author'];
+    $og_nid = $form_values['values']['group'];
+
+    $node = new stdClass();
+    $node->title = $title;
+    $node->type = 'book';
+    $node->status = 1;
+    $node->uid = 1;
+    $node->field_author['und'][0]['value'] = $author;
+    $node->og_group_ref = array('und'=>array(array('target_id'=>$og_nid)));
+
+    node_save($node);
+    drupal_goto("node/".$node->nid);
+}

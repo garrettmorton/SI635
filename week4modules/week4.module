@@ -1,0 +1,77 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gemor
+ * Date: 10/3/2018
+ * Time: 2:55 PM
+ */
+function week4_menu() {
+    $items = array();
+    $items['week4'] = array(
+        'title' => 'Week 4 Schedule',
+        'page callback' => 'week4_schedule',
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM
+    );
+    $items['week4/week'] = array(
+        'title' => 'Week 4 Schedule',
+        'page callback' => 'week4_schedule',
+        'access callback' => TRUE,
+        'type' => MENU_DEFAULT_LOCAL_TASK
+    );
+    $items['week4/monday'] = array(
+        'title' => 'Monday',
+        'page callback' => 'week4_monday',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK
+    );
+    $items['week4/tuesday'] = array(
+        'title' => 'Tuesday',
+        'page callback' => 'week4_tuesday',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK
+    );
+    $items['week4/wednesday'] = array(
+        'title' => 'Wednesday',
+        'page callback' => 'week4_wednesday',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK
+    );
+    $items['week4/thursday'] = array(
+        'title' => 'Thursday',
+        'page callback' => 'week4_thursday',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK
+    );
+    $items['week4/friday'] = array(
+        'title' => 'Friday',
+        'page callback' => 'week4_friday',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK
+    );
+    return $items;
+}
+
+function week4_schedule() {
+    return t("Use the tabs to see each day's schedule!");
+}
+
+function week4_monday() {
+    return t('On Monday you have SI 501 lecture and discussion section.');
+}
+
+function week4_tuesday() {
+    return t('On Tuesday you have SI 507 lecture and discussion section.');
+}
+
+function week4_wednesday() {
+    return t('On Wednesday you have SI 634 and SI 635.');
+}
+
+function week4_thursday() {
+    return t('On Thursday you have no classes.');
+}
+
+function week4_friday() {
+    return t('On Friday you have no classes.');
+}

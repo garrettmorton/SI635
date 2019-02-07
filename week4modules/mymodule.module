@@ -1,0 +1,16 @@
+<?php
+
+function mymodule_menu() {
+    $items['abc/def'] = array(
+        'title' => 'mymodule',
+        'page callback' => 'mymodule_abc_view',
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM
+    );
+    return $items;
+}
+
+function mymodule_abc_view($ghi = 0, $jkl = '') {
+
+// ...
+}

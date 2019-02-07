@@ -1,0 +1,12 @@
+<?php
+
+function week7c_menu_alter(&$items) {
+    $items['admin/help']['description'] = t("I'm trapped in a website factory!");
+}
+
+function week7c_form_alter(&$form, &$form_state, $form_id) {
+    //dpm($form);
+    if ($form['#form_id']=='search_form') {
+        $form['basic']['keys']['#title'] = t('Your search goes here!!');
+    }
+}

@@ -1,0 +1,32 @@
+<?php
+
+/**
+* Created by PhpStorm.
+* User: gemor
+* Date: 9/26/2018
+* Time: 11:13 AM
+*/
+
+function week4a_menu() {
+$items = array();
+$items['week4a/%/%'] = array(
+'title' => 'Wives Demo!',
+'page callback' => 'week4a_demo',
+'page arguments' => array(1), //array(1) here will grab the % wildcard from the url (1 because of 0-indexing)
+'access callback' => 'week4a_demo_access',
+'access arguments' => array(2),
+'type' => MENU_CALLBACK
+);
+
+return $items;
+}
+
+function week4a_demo($name){
+return t("Please go to the store @name!",array('@name'=>$name)); //@ stuff and the array() stuff have to do with string formatting to facilitate translation
+}
+
+function week4a_demo_access($code){
+if ($code=='password'){
+return TRUE;
+} else return FALSE;
+}

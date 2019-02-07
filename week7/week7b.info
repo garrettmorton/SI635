@@ -1,0 +1,4 @@
+name=week7b
+core=7.x
+package=635
+description="adds 'save as draft' button to add node form, makes node/add reliant on new permission"

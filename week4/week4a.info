@@ -1,0 +1,4 @@
+name=week4a
+core=7.x
+package=635
+description="Learn about the wives of Henry VIII. Practice implementing more menu items using hook_menu, t(), and l()."

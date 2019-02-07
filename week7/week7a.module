@@ -1,0 +1,14 @@
+<?php
+
+function week7a_permission() {
+    return array(
+        'admin blah' => array(
+            'title' => t('admin blah'),
+            'description' => t('A permission for access to admin/config'),
+        )
+    );
+}
+
+function week7a_menu_alter(&$items) {
+    $items['admin/config']['access arguments'] = 'admin blah';
+}

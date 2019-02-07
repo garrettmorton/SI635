@@ -1,0 +1,38 @@
+<?php
+
+function week7b_menu_alter($items){
+    $items['node/add']['access arguments'] = 'node creator';
+}
+
+function week7b_permission() {
+    return array(
+        'node creator' => array(
+            'title' => t('node creator'),
+            'description' => t('Allows  user to create new nodes')
+        )
+    );
+}
+
+function week7b_form_alter(&$form, &$form_state, $form_id) {
+    //dpm($form);
+    if (isset($form['#node_edit_form']) and $form['#node_edit_form']) {
+        $form['actions']['save draft'] = array(
+            '#type' => 'submit',
+            '#access' => TRUE,
+            '#value' => t('Save as draft'),
+            '#weight' => 7,
+            '#submit' => array(
+                'node_form_submit',
+                'week7a_draft_callback'
+            )
+        );
+    }
+}
+
+function week7b_draft_callback($form, &$form_state) {
+    $nid = $form_state['values']['nid'];
+    $new_node = node_load($nid);
+    $new_node->status = 0;
+    node_save($new_node);
+    //dpm($new_node);
+}

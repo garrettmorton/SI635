@@ -1,0 +1,51 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gemor
+ * Date: 10/3/2018
+ * Time: 2:56 PM
+ */
+
+function coolcalculator_menu() {
+    $items = array();
+    $items['coolcalculator'] = array(
+        'title' => 'Cool Calculator',
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'coolcalculator_text',
+        'access callback' => TRUE
+    );
+    $items['coolcalculator/%/%/%'] = array(
+        'title' => 'Cool Calculator',
+        'type' => MENU_CALLBACK,
+        'page callback' => 'coolcalculator_function',
+        'page arguments' => array(1, 2, 3),
+        'access callback' => TRUE
+    );
+    return $items;
+}
+
+function coolcalculator_text() {
+    return t('Enter your math problem in the URL to use the Cool Calculator! Format as ...coolcalculator/x/operator/y, using the four following operators: plus, minus, times, divideby.  Example: gemorton.sites.uofmhosting.net/5/times/4');
+}
+
+function coolcalculator_function($x, $operator, $y) {
+    if ($operator == 'plus') {
+        $res = $x + $y;
+        return t("@x + @y = @res",array('@x'=>$x, '@y'=>$y, '@res'=>$res));
+    }
+    elseif ($operator == 'minus') {
+        $res = $x - $y;
+        return t("@x - @y = @res",array('@x'=>$x, '@y'=>$y, '@res'=>$res));
+    }
+    elseif ($operator == 'times') {
+        $res = $x * $y;
+        return t("@x * @y = @res",array('@x'=>$x, '@y'=>$y, '@res'=>$res));
+    }
+    elseif ($operator == 'divideby') {
+        $res = $x / $y;
+        return t("@x / @y = @res",array('@x'=>$x, '@y'=>$y, '@res'=>$res));
+    }
+    else {
+        return t("Uh oh! It looks like you're trying to do some math with @x and @y, but there's a typo in your operator! Remember to use only 'plus', 'minus', 'times', and 'divideby'!",array('@x'=>$x, '@y'=>$y));
+    }
+}

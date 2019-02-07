@@ -1,0 +1,4 @@
+name=mymodule
+core=7.x
+package=635
+description="test module"

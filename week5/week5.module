@@ -1,0 +1,51 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gemor
+ * Date: 10/3/2018
+ * Time: 10:40 AM
+ */
+
+function week5_menu() {
+    $items = array();
+
+    $items['week5'] = array(
+        'title' => 'Now week 5',
+        'page callback' => 'week5_thing',
+        'type' => MENU_NORMAL_ITEM,
+        'access callback' => 'user_access', //we have to pass user_access() a string argument (a permission)
+        'access arguments' => array('use week5')
+    );
+
+    $items['week5/admin'] = array(
+        'title' => 'Now week 5',
+        'page callback' => 'week5_thing',
+        'type' => MENU_NORMAL_ITEM,
+        'access callback' => 'user_access', //we have to pass user_access() a string argument (a permission)
+        'access arguments' => array('admin week5')
+    );
+
+    return $items;
+}
+
+function week5_thing() {
+    $out = 'it worked!';
+    if (user_access('admin week5')){
+        drupal_set_message(t("You are an admin"), 'status');
+        $out .= " ".l(t("visit admin pages"),"week5/admin");
+    }
+    return $out;
+}
+
+function week5_permission() { //adapted from code on Drupal API site (for hook_permission) !!"hook" should never appear in a module file--rename it!!
+    $perms = array();
+    $perms['use week5'] = array(
+            'title' => t('Use my module'),
+            'description' => t('Perform user tasks for my module.')
+        );
+    $perms['admin week5'] = array(
+        'title' => t('Administer my module'),
+        'description' => t('Perform administration tasks for my module.')
+        );
+    return $perms;
+}

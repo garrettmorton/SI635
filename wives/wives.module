@@ -1,0 +1,138 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gemor
+ * Date: 10/8/2018
+ * Time: 10:41 PM
+ */
+
+function wives_menu() {
+    //HOOK_MENU
+    $items = array();
+
+    $items['wives'] = array(
+        'title' => 'Henry VIII',
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'wives_king',
+        //'page arguments' => array('Henry-VIII-of-England'),
+        'access callback' => TRUE
+    );
+
+    $wives = array(
+        'Catherine-of-Aragon',
+        'Anne-Boleyn',
+        'Jane-Seymour',
+        'Anne-of-Cleves',
+        'Catherine-Howard',
+        'Catherine-Parr'
+    );
+
+    foreach ($wives as $name) {
+        $wife_path = 'wives/'.$name;
+        $wife_title = str_replace('-',' ',$name);
+        $items[$wife_path] = array(
+            'title' => $wife_title,
+            'type' => MENU_NORMAL_ITEM,
+            'page callback' => 'wives_queen',
+            'page arguments' => array(1),
+            'access callback' => TRUE
+        );
+    }
+/*
+    $items['wives/vardump'] = array(
+        'title' => 'Var Dump View',
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'wives_vardump',
+        'page arguments' => array('Catherine-Parr'),
+        'access callback' => TRUE
+    );
+*/
+    return $items;
+}
+
+function wives_image_title($name) {
+    $url = 'https://en.wikipedia.org/w/api.php';
+    $name_param = str_replace('-', ' ', $name);
+    $params = array(
+        'action' => 'query',
+        'prop' => 'images',
+        'titles' => $name_param,
+        'format' => 'php'
+    );
+    /*$pstring = drupal_http_build_query($params);
+    $options = array(
+        'method' => 'GET',
+        'data' => $pstring
+    );
+    $response = drupal_http_request($url, $options);*/
+
+    $full_url = url($url, array('query'=>$params));
+    $response = file_get_contents($full_url); //This doesn't seem like the best way to do this.  I had a lot of trouble figuring out http request functions (see above)
+    $response_data = unserialize($response);
+
+    $page_list = $response_data['query']['pages'];
+
+    foreach ($page_list as $value) {//$response_data['query']['pages'] as $value) {
+        foreach ($value['images'] as $web_image) {
+            $extract_name = substr($web_image['title'],5,-4);
+            if (strtolower($extract_name) == strtolower($name_param)) {
+                return $web_image['title'];
+            }
+        }
+    }
+    return 'no image!'; //MAKE THIS GOOD
+}
+
+function wives_image_url($title) {
+    if ($title == 'no image!') {
+        return $title;
+    }
+    $url = 'https://en.wikipedia.org/w/api.php';
+    $params = array(
+        'action' => 'query',
+        'prop' => 'imageinfo',
+        'titles' => $title,
+        'format' => 'php',
+        'iiprop' => 'url'
+    );
+
+    $full_url = url($url, array('query'=>$params));
+    $response = file_get_contents($full_url);
+    $response_data = unserialize($response);
+    $image_url = $response_data['query']['pages'][-1]['imageinfo'][0]['url'];
+    return $image_url;
+}
+
+function wives_queen($name) {
+    $web_image = wives_image_title($name);
+    $img_url = wives_image_url($web_image);
+    $wife_string = str_replace('-', ' ', $name);
+    $link_string = 'https://en.wikipedia.org/wiki/'.str_replace('-','_',$name);
+    if ($img_url == 'no image!') {
+        $text = t('No image!<br><a href="@link_string">@wife_string</a>', array('@img_url'=>$img_url,'@link_string'=>$link_string, '@wife_string'=>$wife_string));
+    }
+    else {
+        $text = t('<img src="@img_url" width="200"><br><a href="@link_string">@wife_string</a>', array('@img_url'=>$img_url,'@link_string'=>$link_string, '@wife_string'=>$wife_string));
+    }
+    return $text;
+}
+
+function wives_king() {//$king_var) {
+    /*$img_title = wives_image_title($king_var);
+    $img_url = wives_image_url($img_title);
+    $text = t('<img src="@img_url" alt="@king_var"><br>The king says: "I am Henry VIII, I am.  Do as I say, not as I do, and I say to learn about my wives!"', array('@img_url'=>$img_url,'@king_var'=>$king_var));
+    return $text;
+    //return $king_var;*/
+    return t('The king says: "I am Henry VIII, I am.  Do as I say, not as I do, and I say to learn about my wives!"');
+}
+
+/*
+function wives_queen($wife_var) {
+    $wife_string = str_replace('-', ' ', $wife_var);
+    $link_string = 'https://en.wikipedia.org/wiki/'.str_replace('-','_',$wife_var);
+
+
+
+    return l($wife_string, $link_string);
+}
+*/

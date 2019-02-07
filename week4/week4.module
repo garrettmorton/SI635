@@ -1,0 +1,38 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gemor
+ * Date: 9/26/2018
+ * Time: 10:49 AM
+ */
+
+function week4_menu() {
+    $items = array();
+    $items["week4a"] = array(  //the key of each array item is the path for the callback, and the value is another array with info about it
+        'title' => 'Welcome to Week 4',
+        //'description' =>
+        'page callback' => 'week4_hello_world',
+        //'page arguments'
+        'access callback' => TRUE, //this can be dynamic, but here we'll hardcode it for simplicity
+        //'access arguments'
+        'type' => MENU_NORMAL_ITEM,
+    );
+    $items["week4b"] = array(  //the key of each array item is the path for the callback, and the value is another array with info about it
+        'title' => 'Almost Week 5!',
+        //'description' =>
+        'page callback' => 'week4_goodbye_world',
+        //'page arguments'
+        'access callback' => TRUE, //this can be dynamic, but here we'll hardcode it for simplicity
+        //'access arguments'
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    return $items;
+}
+
+function week4_hello_world() {
+    return t("Hello, world!"); //running text through t function allows text to be plugged into translate module
+}
+function week4_goodbye_world() {
+    return t("It's almost week 5!"); //running text through t function allows text to be plugged into translate module
+}

@@ -1,0 +1,143 @@
+<?php
+// implement hook_views_api
+function finalproject_views_api() {
+    return array();
+}
+
+// implement hook_views_default_views_alter to pass two contextual filters to interior view
+function finalproject_views_default_views_alter(&$views) {
+    dpm($views['books_in_reading_list']);
+    dpm($views['questions']);
+}
+
+// implement hook_form_alter to add a "submit and add another" button to node creation and edit forms
+function finalproject_form_alter(&$form, &$form_state, $form_id) {
+    //dpm($form);
+
+    if (isset($form['#node_edit_form']) and $form['#node_edit_form']) {
+        $typename = ucwords(str_replace('_', ' ', $form['type']['#value']));
+        $form['actions']['add_new'] = array(
+            '#type' => 'submit',
+            '#access' => TRUE,
+            '#value' => t('Save and add another '.check_plain($typename)),
+            '#weight' => 7,
+            '#submit' => array(
+                'node_form_submit',
+                'finalproject_redirect_callback'
+            )
+        );
+    }
+}
+
+// callback for hook_form_alter to change redirect to node add form
+function finalproject_redirect_callback($form, &$form_state) {
+    $typename = str_replace('_', '-', $form['type']['#value']);
+    $form_state['redirect'] = 'node/add/'.check_plain($typename);
+}
+
+// implement hook_form_FORM_ID_alter to add custom validation to reading question creation form
+function finalproject_form_reading_question_node_form_alter(&$form, &$form_state, $form_id) {
+    $form['#validate'][] = 'finalproject_reading_question_node_form_validate';
+}
+
+// implement hook_FORM_ID_validate to make sure that reading question is attached to a book and list that are attached to each other
+function finalproject_reading_question_node_form_validate($form, &$form_state) {
+    //entity query and node load php snippet below adapted from midterm exam
+    //to find titles and authors of all books
+    //
+    //find nids for all book nodes
+    module_load_include('inc','entity');
+    $groups_query = new EntityFieldQuery();
+    $lists = $groups_query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'reading_list')
+        ->propertyCondition('status', 1)
+        ->execute();
+
+    $nids = array();
+    foreach ($lists['node'] as $value) {
+        $nids[] = $value->nid;
+    }
+
+    //load reading list nodes from nids
+    $list_nodes = node_load_multiple($nids);
+
+    //make list of reading lists (key) mapped to a list of attached books (value)
+    $reading_lists = array();
+    foreach ($list_nodes as $value) {
+        //dpm($value);
+        $listnid = $value->nid;
+        $reading_lists[$listnid] = array();
+        $listbooks = $value->field_list_book['und'];
+        foreach ($listbooks as $book) {
+            $reading_lists[$listnid][] = $book['target_id'];
+        }
+    }
+
+    //check whether selected book is in selected reading list
+    $form_book_nid = $form_state['values']['field_question_book']['und'][0]['target_id'];
+    $form_list_nid = $form_state['values']['field_question_reading_list']['und'][0]['target_id'];
+    if (!in_array($form_book_nid, $reading_lists[$form_list_nid])) {
+        form_set_error('field_question_book');
+        form_set_error('field_question_reading_list');
+        drupal_set_message(t('The selected book must be in the selected reading list!  If one of these entries is a mistake, correct that entry and resubmit the form.  If both of these choices were intentional, make sure your reading list includes all of the intended books.'), 'error');
+    }
+}
+
+// implement hook_form_FORM_ID_alter to add custom validation to book creation form
+function finalproject_form_book_node_form_alter(&$form, &$form_state, $form_id) {
+    $form['#validate'][] = 'finalproject_book_node_form_validate';
+}
+
+// implement hook_FORM_ID_validate to make sure same book is only added to database once
+function finalproject_book_node_form_validate($form, &$form_state) {
+    //entity query and node load php snippet below adapted from midterm exam
+    //to find titles and authors of all books
+    //
+    //find nids for all book nodes
+    module_load_include('inc','entity');
+    $groups_query = new EntityFieldQuery();
+    $books = $groups_query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'book')
+        ->propertyCondition('status', 1)
+        ->execute();
+
+    $nids = array();
+    foreach ($books['node'] as $value) {
+        $nids[] = $value->nid;
+    }
+
+    //load book nodes from nids
+    $book_nodes = node_load_multiple($nids);
+
+    //build co-indexed lists of authors, titles, and nids
+    $author_list = array();
+    $title_list = array();
+    $nid_list = array();
+    $counter = 0;
+    foreach ($book_nodes as $book) {
+        $author_field = $book->field_book_author;
+        foreach ($author_field['und'] as $author) {
+            $author_list[$counter] = strtolower($author['value']);
+            $title_list[$counter] = strtolower($book->title);
+            $nid_list[$counter] = $book->nid;
+            $counter = $counter +1;
+        }
+    }
+
+    //check whether book author is already in database,
+    //and if so, if title is there with same author
+    $input_author = strtolower($form_state['values']['field_book_author']['und'][0]['value']);
+    $input_title =  strtolower($form_state['values']['title']);
+    foreach ($author_list as $key => $value) {
+        if ($input_author == $value) {
+            if ($input_title == $title_list[$key]) {
+                form_set_error('title');
+                form_set_error('field_book_author');
+                drupal_set_message(t('That title by that author has already been created <a href="@url">here</a>! Use the existing book page for your reading lists and reading questions by selecting it by title on the reading list or reading question creation form.', array('@url'=>url('node/'.$nid_list[$key]))), 'error');
+            }
+        }
+    }
+}
+

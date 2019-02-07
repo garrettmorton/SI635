@@ -1,0 +1,4 @@
+name=finalproject
+core=7.x
+package=635
+description="Add a "save and add another" button to node add page"

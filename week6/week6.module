@@ -1,0 +1,65 @@
+<?php
+
+function week6_menu() {
+    $items = array();
+    $items['week6'] = array(
+        'title' => 'week6',
+        'access callback' => TRUE,
+        'page callback' => 'week6_demo',
+        'type' => MENU_NORMAL_ITEM
+    );
+    return $items;
+}
+
+function week6_demo() {
+    return drupal_get_form('week6_form');
+}
+
+function week6_form() {
+    $form = array();
+    // What is your name 1 line text field
+    $form['name'] = array(
+        '#type' => 'textfield', // form field names must always start with # // there are form api reference lists online
+        '#title' => t('Name'),
+    );
+
+    // What is your favorite color drop down of blue, red, green
+    $form['color'] = array(
+        '#type' => 'select',
+        '#options' => array(
+            'blue' => t('Blue'),
+            'red' => t('Red'),
+            'green' => t('Green')
+        ),
+        '#title' => t('Color'),
+    );
+
+    // What is your age text field must be number
+    $form['age'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Age'),
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'submit'
+    );
+    return $form;
+}
+
+function week6_form_validate($form, $form_state) {
+    if ($form_state['values']['name'] == "hello") {
+        form_set_error('name',t("that's not a name"));
+    }
+    if (!is_numeric($form_state['values']['age'])) {
+        form_set_error('age',t('Please enter your age as a number'));
+    }
+    if ($form_state['values']['age'] < 18) {
+        form_set_error('age', t('You are too young to use this form'));
+    }
+}
+
+function week6_form_submit($form, $form_state) {
+    $msg = t("Thank you for playing @name", array('@name' => $form_state['values']['name']));
+    drupal_set_message($msg);
+}
